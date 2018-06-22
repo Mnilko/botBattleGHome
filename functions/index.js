@@ -1,10 +1,14 @@
+/* eslint-disable no-param-reassign */
+
 const functions = require('firebase-functions');
 const {
   dialogflow,
   SimpleResponse,
 } = require('actions-on-google');
+const request = require('request-promise-native');
 
 const app = dialogflow({ debug: true });
+const AIUrl = 'https://h282dtqxfc.execute-api.us-east-1.amazonaws.com/dev/tictactoe';
 
 const INTENTS = {
   defaultWelcomeIntent: 'Default Welcome Intent',
@@ -17,6 +21,7 @@ const INTENTS = {
 // Default Welcome Intent
 app.intent(INTENTS.defaultWelcomeIntent, (conv) => {
   const responseText = 'Hi, welcome to Bot Battle. You First.';
+
   conv.ask(new SimpleResponse({
     speech: responseText,
   }));
@@ -25,17 +30,47 @@ app.intent(INTENTS.defaultWelcomeIntent, (conv) => {
 // Start Game Intent
 app.intent(INTENTS.startGameIntent, (conv) => {
   const responseText = 'Alexa, tell bot battle to start a game.';
+  conv.data.board = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+
   conv.ask(new SimpleResponse({
-    speech: responseText, 
+    speech: responseText,
   }));
 });
 
 // Turn Intent
 app.intent(INTENTS.turnIntent, (conv) => {
-  const responseText = 'My turn is b2';
-  conv.ask(new SimpleResponse({
-    speech: responseText, 
-  }));
+  const { 'number-integer': turnNumber, TurnLetter: turnLetter } = conv.parameters;
+  const currentBoard = conv.data.board || ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+
+  let responseText;
+  return request.post({
+    method: 'POST',
+    uri: AIUrl,
+    body: { board: currentBoard, coordinate: `${turnLetter}${turnNumber}` },
+    json: true,
+  }).then((data) => {
+    const {
+      board, newTurnCoordinate, winStatus,
+    } = data;
+    conv.data.board = board;
+    if (newTurnCoordinate === undefined) {
+      responseText = 'It\'s a draw bro!';
+    } else if (winStatus) {
+      responseText = 'You lose.';
+    } else {
+      responseText = `My turn is ${newTurnCoordinate}`;
+    }
+
+    conv.ask(new SimpleResponse({
+      speech: responseText,
+    }));
+  }).catch((err) => {
+    console.error(err);
+
+    conv.ask(new SimpleResponse({
+      speech: 'Oops',
+    }));
+  });
 });
 
 // Lose Intent
@@ -48,7 +83,7 @@ app.intent(INTENTS.loseIntent, (conv) => {
 
 // Default Fallback Intent
 app.intent(INTENTS.defaultFallbackIntent, (conv) => {
-  const responseText = 'I cannot understand you.';
+  const responseText = 'I cannot understand you. Please repeat.';
   conv.ask(new SimpleResponse({
     speech: responseText,
   }));
