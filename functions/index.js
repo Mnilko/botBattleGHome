@@ -20,7 +20,7 @@ const INTENTS = {
 
 // Default Welcome Intent
 app.intent(INTENTS.defaultWelcomeIntent, (conv) => {
-  const responseText = 'Hi, welcome to Bot Battle. You First.';
+  const responseText = 'Alexa, start bot battle.';
 
   conv.ask(new SimpleResponse({
     speech: responseText,
@@ -39,7 +39,7 @@ app.intent(INTENTS.startGameIntent, (conv) => {
 
 // Turn Intent
 app.intent(INTENTS.turnIntent, (conv) => {
-  const { 'number-integer': turnNumber, TurnLetter: turnLetter } = conv.parameters;
+  const { TurnNumber: turnNumber = '', TurnLetter: turnLetter = '' } = conv.parameters;
   const currentBoard = conv.data.board || ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 
   let responseText;
@@ -52,16 +52,19 @@ app.intent(INTENTS.turnIntent, (conv) => {
     const {
       board, newTurnCoordinate, winStatus,
     } = data;
+    let command = 'ask';
     conv.data.board = board;
     if (newTurnCoordinate === undefined) {
       responseText = 'It\'s a draw bro!';
+      command = 'close';
     } else if (winStatus) {
-      responseText = 'You lose.';
+      responseText = `I win with ${newTurnCoordinate}. You lose.`;
+      command = 'close';
     } else {
       responseText = `My turn is ${newTurnCoordinate}`;
     }
 
-    conv.ask(new SimpleResponse({
+    conv[command](new SimpleResponse({
       speech: responseText,
     }));
   }).catch((err) => {
@@ -76,7 +79,7 @@ app.intent(INTENTS.turnIntent, (conv) => {
 // Lose Intent
 app.intent(INTENTS.loseIntent, (conv) => {
   const responseText = 'Ooo, no. I will beat you next time';
-  conv.ask(new SimpleResponse({
+  conv.close(new SimpleResponse({
     speech: responseText,
   }));
 });
