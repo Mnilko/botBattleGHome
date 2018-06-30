@@ -14,6 +14,8 @@ const INTENTS = {
   defaultWelcomeIntent: 'Default Welcome Intent',
   defaultFallbackIntent: 'Default Fallback Intent',
   startGameIntent: 'Start Game Intent',
+  repeatIntent: 'Repeat Intent',
+  drawIntent: 'Draw Intent',
   loseIntent: 'Lose Intent',
   turnIntent: 'Turn Intent',
 };
@@ -64,6 +66,8 @@ app.intent(INTENTS.turnIntent, (conv) => {
       responseText = `My turn is ${newTurnCoordinate}`;
     }
 
+    conv.data.lastResponse = responseText;
+
     conv[command](new SimpleResponse({
       speech: responseText,
     }));
@@ -74,6 +78,23 @@ app.intent(INTENTS.turnIntent, (conv) => {
       speech: 'Oops',
     }));
   });
+});
+
+// Repeat Intent
+app.intent(INTENTS.repeatIntent, (conv) => {
+  const responseText = conv.data.lastResponse || 'What?';
+  conv.ask(new SimpleResponse({
+    speech: responseText,
+  }));
+});
+
+
+// Draw Intent
+app.intent(INTENTS.drawIntent, (conv) => {
+  const responseText = 'Good game. Thanks!';
+  conv.close(new SimpleResponse({
+    speech: responseText,
+  }));
 });
 
 // Lose Intent
