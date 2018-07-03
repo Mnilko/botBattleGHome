@@ -22,7 +22,7 @@ const INTENTS = {
 
 // Default Welcome Intent
 app.intent(INTENTS.defaultWelcomeIntent, (conv) => {
-  const responseText = 'Alexa, start bot battle.';
+  const responseText = 'Alexa. Start bot battle.';
 
   conv.ask(new SimpleResponse({
     speech: responseText,
@@ -31,7 +31,7 @@ app.intent(INTENTS.defaultWelcomeIntent, (conv) => {
 
 // Start Game Intent
 app.intent(INTENTS.startGameIntent, (conv) => {
-  const responseText = 'Alexa, tell bot battle to start a game.';
+  const responseText = 'Alexa.  tell bot battle to start a game.';
   conv.data.board = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 
   conv.ask(new SimpleResponse({
